@@ -4,12 +4,11 @@ tab_1 <- read.csv('tab_1_areaveg.csv')
 library(tidyverse)
 library(tidyr)
 
-# cirar uma planilha com os atributos do parque ###
+# cirar uma planilha com os atributos do parque ####
 parques <- tab_1 |>
       select(id.pq:`categoria.area.verde`) |> 
       unique()
       
-# Adicionei um texto
 
 # criar uma tabela de classes vegetais em cada coluna, com o valor da área (m2) por parque id.
 # mudei o id.pq para ser só ID 
