@@ -1,4 +1,4 @@
-tab_1 <- read.csv('tab_1_areaveg.csv')
+tab_1 <- read.csv('dataframes/tab_1_areaveg.csv')
 
 
 library(tidyverse)
@@ -8,7 +8,25 @@ library(tidyr)
 parques <- tab_1 |>
       select(id.pq:`categoria.area.verde`) |> 
       unique()
-      
+
+## resolver os ids repetidos para o mesmo parque (resolvido pelo nome do parque) ####
+
+# tabela com parque ID novo, nome do parque 
+parque_id <- parques |> 
+      select(nome.pq:categoria.area.verde) |> 
+      unique() |> 
+      mutate(parque_id = 1:length(nome.pq)) |>
+      rename(nome_parque = nome.pq,
+             classificacao_area_verde = class.area.verde,
+             area_m2 = area.pq,
+             categoria_area_verde = categoria.area.verde) |> 
+      relocate(parque_id, nome_parque)
+
+
+write.csv(parque_id, file = 'dataframes/parques.csv', row.names = FALSE,
+          fileEncoding = "UTF8")
+
+
 
 # criar uma tabela de classes vegetais em cada coluna, com o valor da área (m2) por parque id.
 # mudei o id.pq para ser só ID 
