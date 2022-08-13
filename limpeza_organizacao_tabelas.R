@@ -1,4 +1,4 @@
-tab_1 <- read.csv('dataframes/tab_1_areaveg.csv')
+tab_1 <- read.csv('dataframes/tab_1_areaveg_novoid.csv')
 
 
 library(tidyverse)
@@ -6,7 +6,7 @@ library(tidyr)
 
 # cirar uma planilha com os atributos do parque ####
 parques <- tab_1 |>
-      select(id.pq:`categoria.area.verde`) |> 
+      select(novo_id_pq:`categoria_area_verde`, -id_pq) |> 
       unique()
 
 ## resolver os ids repetidos para o mesmo parque (resolvido pelo nome do parque) ####
