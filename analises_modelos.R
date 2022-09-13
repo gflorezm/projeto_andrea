@@ -117,7 +117,8 @@ plot(mod)
 
 tabela_analise_0 <- tabela_analise_0 |> 
       mutate(areapa_scale = (area_pq_m2 - mean(area_pq_m2))/sd(area_pq_m2),
-             cob_scale = asin(sqrt(cob_vegetacao/100)))
+             cob_scale = asin(sqrt(cob_vegetacao/100)),
+             area_pq_km2 = area_pq_m2/1000)
  
 modfull <- glm(riqueza ~ areapa_scale*cob_scale + shannon, 
            data = tabela_analise_0, family = poisson)
@@ -158,9 +159,40 @@ bbmle::AICctab(mod0, mod1, mod2, mod3, mod4, mod5, mod6, modfull,
 
 # gráfico de efeitos 
 
-modfull2 <- glm(riqueza ~ area_pq_m2*cob_vegetacao + shannon, 
+modfull2 <- glm(riqueza ~ area_pq_km2*cob_vegetacao + shannon, 
                data = tabela_analise_0, family = poisson)
 
-efeitos <- as.data.frame(effects::allEffects(modfull2))
 
-plot(effects::allEffects(modfull2))
+efeitos <- as.data.frame(effects::effect('area_pq_km2:cob_vegetacao',
+                                         modfull2)) |> 
+      mutate(cobs = factor(
+            paste0('Cobertura: ',cob_vegetacao, "%"),
+            levels = c("Cobertura: 50%", "Cobertura: 60%" ,
+                       "Cobertura: 70%", "Cobertura: 90%",
+                       "Cobertura: 100%")
+      ))
+
+# gráfico 1
+ggplot(efeitos,
+       aes(x = area_pq_km2, y = log(fit))) +
+      geom_ribbon(aes(ymin = log(lower), ymax = log(upper)),
+                  alpha = 0.4) +
+      geom_line(color = 'blue') +
+      facet_wrap(. ~ cobs) +
+      labs(x = 'Area do parque (Km2)',
+           y = 'Riqueza (log)') +
+      theme_bw()
+
+
+efeitos2 <- as.data.frame(effects::effect('shannon',
+                                         modfull2))
+
+# gráfico 2
+ggplot(efeitos2,
+       aes(x = shannon, y = log(fit))) +
+      geom_ribbon(aes(ymin = log(lower), ymax = log(upper)),
+                  alpha = 0.4) +
+      geom_line(color = 'blue') +
+      labs(x = 'Diversidade de coberturas vegetais (Shannon)',
+           y = 'Riqueza (log)') +
+      theme_bw()
