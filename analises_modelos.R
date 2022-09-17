@@ -12,8 +12,6 @@ library(vegan)
 
 # tentativa de acertar o pq_id ####
 
-
-
 tab_0 <- tab_1 |> 
       filter(is.na(pq_id))
 
@@ -119,7 +117,13 @@ tabela_analise_0 <- tabela_analise_0 |>
       mutate(areapa_scale = (area_pq_m2 - mean(area_pq_m2))/sd(area_pq_m2),
              cob_scale = asin(sqrt(cob_vegetacao/100)),
              area_pq_km2 = area_pq_m2/1000)
+
+save(tabela_analise_0, file = 'dataframes/dados_analise.RData')
  
+
+# Modelos a partir dos dados já processados #####
+load('dataframes/dados_analise.RData')
+
 modfull <- glm(riqueza ~ areapa_scale*cob_scale + shannon, 
            data = tabela_analise_0, family = poisson)
 
@@ -162,6 +166,8 @@ bbmle::AICctab(mod0, mod1, mod2, mod3, mod4, mod5, mod6, modfull,
 modfull2 <- glm(riqueza ~ area_pq_km2*cob_vegetacao + shannon, 
                data = tabela_analise_0, family = poisson)
 
+
+summary(modfull2)
 
 efeitos <- as.data.frame(effects::effect('area_pq_km2:cob_vegetacao',
                                          modfull2)) |> 
