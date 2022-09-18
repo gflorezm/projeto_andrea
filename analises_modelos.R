@@ -124,6 +124,12 @@ save(tabela_analise_0, file = 'dataframes/dados_analise.RData')
 # Modelos a partir dos dados já processados #####
 load('dataframes/dados_analise.RData')
 
+if(!require(tidyverse)) install.packages('tidyverse'); library(tidyverse)
+if(!require(ggplot2)) install.packages('ggplot2'); library(ggplot2)
+if(!require(MASS)) install.packages('MASS'); library(MASS)
+if(!require(effects)) install.packages('effects'); library(effects)
+
+
 modfull <- glm(riqueza ~ areapa_scale*cob_scale + shannon, 
            data = tabela_analise_0, family = poisson)
 
