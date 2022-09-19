@@ -176,12 +176,9 @@ modfull2 <- glm(riqueza ~ area_pq_km2*cob_vegetacao + shannon,
 summary(modfull2)
 
 efeitos <- as.data.frame(effects::effect('area_pq_km2:cob_vegetacao',
-                                         modfull2)) |> 
-      mutate(cobs = factor(
-            paste0('Cobertura: ',cob_vegetacao, "%"),
-            levels = c("Cobertura: 50%", "Cobertura: 60%" ,
-                       "Cobertura: 70%", "Cobertura: 90%",
-                       "Cobertura: 100%")
+                                         modfull2,xlevels=list(cob_vegetacao=seq(0, 100, 20)))) |>
+  mutate(cobs = factor(paste('Cobertura: ',cob_vegetacao, "%", sep=""), 
+             levels = c("Cobertura: 0%","Cobertura: 20%","Cobertura: 40%","Cobertura: 60%","Cobertura: 80%","Cobertura: 100%")
       ))
 
 # gráfico 1
