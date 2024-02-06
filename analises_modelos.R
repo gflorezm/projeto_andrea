@@ -175,22 +175,56 @@ modfull2 <- glm(riqueza ~ area_pq_km2*cob_vegetacao + shannon,
 
 summary(modfull2)
 
-efeitos <- as.data.frame(effects::effect('area_pq_km2:cob_vegetacao',
-                                         modfull2,xlevels=list(cob_vegetacao=seq(0, 100, 20)))) |>
-  mutate(cobs = factor(paste('Cobertura: ',cob_vegetacao, "%", sep=""), 
-             levels = c("Cobertura: 0%","Cobertura: 20%","Cobertura: 40%","Cobertura: 60%","Cobertura: 80%","Cobertura: 100%")
-      ))
+efeitos <- as.data.frame(
+      effects::effect(
+            'area_pq_km2:cob_vegetacao',
+            modfull2,
+            xlevels=list(cob_vegetacao = c(60, 80, 100))
+      )
+) |>
+      mutate(
+            cobs = factor(
+                  paste('Cobertura: ',cob_vegetacao, "%", sep=""), 
+                  levels = c("Cobertura: 60%", "Cobertura: 80%", "Cobertura: 100%")
+            ),
+            fit = log(fit),
+            upper = log(upper),
+            lower = log(lower)
+      )
+
+
+extract_coeff_df <- function(y,x) {
+      
+      mod <- lm(y ~ x)
+      
+      dt <- data.frame(
+            alpha = coef(mod)[1],
+            beta = coef(mod)[2]
+      )
+      
+      return(dt)
+}
+
+beta_coef <- efeitos %>% 
+      group_by(cobs) %>% 
+      summarize(extract_coeff_df(fit, area_pq_km2))
+
+
 
 # gráfico 1
-ggplot(efeitos,
-       aes(x = area_pq_km2, y = log(fit))) +
-      geom_ribbon(aes(ymin = log(lower), ymax = log(upper)),
+efeitos %>% 
+      # filter(log(upper) < 10) %>%
+ggplot(aes(x = area_pq_km2, y = fit)) +
+      geom_ribbon(aes(ymin = lower, 
+                      ymax = upper),
                   alpha = 0.4) +
       geom_line(color = 'blue') +
-      facet_wrap(. ~ cobs) +
-      labs(x = 'Area do parque (Km2)',
+            facet_grid(. ~ cobs) +
+      labs(x = expression ("Área do parque ("~km^2~")"),
            y = 'Riqueza (log)') +
       theme_bw()
+
+
 
 
 efeitos2 <- as.data.frame(effects::effect('shannon',
@@ -205,3 +239,6 @@ ggplot(efeitos2,
       labs(x = 'Diversidade de coberturas vegetais (Shannon)',
            y = 'Riqueza (log)') +
       theme_bw()
+
+summary(modfull)
+confint(modfull)
