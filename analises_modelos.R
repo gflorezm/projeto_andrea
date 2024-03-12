@@ -118,6 +118,7 @@ tabela_analise_0 <- tabela_analise_0 |>
              cob_scale = asin(sqrt(cob_vegetacao/100)),
              area_pq_km2 = area_pq_m2/1000)
 
+
 save(tabela_analise_0, file = 'dataframes/dados_analise.RData')
  
 
