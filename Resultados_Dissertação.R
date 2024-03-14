@@ -1,9 +1,8 @@
 ## Modelos a partir dos dados já processados #####
 
 tab_mod <- read.csv ('dataframes/tab_mod.csv', sep = ',')
-tab_mod_arbflo <- read.csv ('dataframes/tab_mod_arbflo.csv', sep = ',')
-str(tab_mod)
-str(tab_mod_arbflo)
+tab_ana_arbo <- read.csv ('dataframes/teste', sep = ',')
+
 
 if(!require(tidyverse)) install.packages('tidyverse'); library(tidyverse)
 if(!require(ggplot2)) install.packages('ggplot2'); library(ggplot2)
@@ -12,6 +11,7 @@ if(!require(effects)) install.packages('effects'); library(effects)
 
 # Hipótese 1 - diversidade de fitofisionomias X riqueza
 
+library(ggplot2)
 
 efeitos2 <- as.data.frame(effects::effect('shannon',
                                           modfull2))
@@ -318,5 +318,22 @@ efeitos %>%
       geom_line(color = 'blue') +
       facet_grid(. ~ cobs) +
       labs(x = expression ("Volume de Edificações ("~m^3/m^2~")"),
+           y = 'Riqueza (log)') +
+      theme_bw()
+
+
+
+
+#Hipótese água
+
+efeitos3 <- as.data.frame(effects::effect('AGUA_pq_m2',
+                                          modfull7))
+
+ggplot(efeitos3,
+       aes(x = AGUA_pq_m2, y = log(fit))) +
+      geom_ribbon(aes(ymin = log(lower), ymax = log(upper)),
+                  alpha = 0.4) +
+      geom_line(color = 'blue') +
+      labs(x = expression ("Presença de Corpos de água ("~m^2~")"),
            y = 'Riqueza (log)') +
       theme_bw()
