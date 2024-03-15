@@ -1,7 +1,45 @@
 ## Modelos a partir dos dados já processados #####
 
 tab_mod <- read.csv ('dataframes/tab_mod.csv', sep = ',')
-tab_ana_arbo <- read.csv ('dataframes/teste', sep = ',')
+tab_ana_arbo <- read.csv ('dataframes/tab_ana_arbo.csv',sep = ';')
+tab_ana_flo <- read.csv ('dataframes/tab_ana_flo.csv',sep = ';')
+
+View(tab_mod)
+View(tab_ana_arbo)
+View(tab_ana_flo)
+
+library(dplyr)
+library(magrittr)
+
+tab_ana_arbo <- tab_ana_arbo %>%
+      mutate_all(~gsub(",", ".", .))
+
+tab_ana_flo <- tab_ana_flo %>%
+      mutate_all(~gsub(",", ".", .))
+
+class(tab_ana_arbo$riqueza)
+
+# Converter a variável riqueza para numérica
+tab_ana_arbo$riqueza <- as.numeric(tab_ana_arbo$riqueza)
+tab_ana_arbo$area_pq_km2 <- as.numeric(tab_ana_arbo$area_pq_km2)
+tab_ana_arbo$shannon <- as.numeric(tab_ana_arbo$shannon)
+tab_ana_arbo$cob_vegetacao <- as.numeric(tab_ana_arbo$cob_vegetacao)
+
+tab_ana_flo$riqueza <- as.numeric(tab_ana_flo$riqueza)
+tab_ana_flo$area_pq_km2 <- as.numeric(tab_ana_flo$area_pq_km2)
+tab_ana_flo$shannon <- as.numeric(tab_ana_flo$shannon)
+tab_ana_flo$cob_vegetacao <- as.numeric(tab_ana_flo$cob_vegetacao)
+
+# Verificar novamente o tipo de dados da variável riqueza
+class(tab_ana_arbo$riqueza)
+class(tab_ana_arbo$area_pq_km2)
+class(tab_ana_arbo$shannon)
+class(tab_ana_arbo$cob_vegetacao)
+
+class(tab_ana_flo$riqueza)
+class(tab_ana_flo$area_pq_km2)
+class(tab_ana_flo$shannon)
+class(tab_ana_flo$cob_vegetacao)
 
 
 if(!require(tidyverse)) install.packages('tidyverse'); library(tidyverse)
@@ -20,17 +58,47 @@ ggplot(efeitos2,
       geom_ribbon(aes(ymin = log(lower), ymax = log(upper)),
                   alpha = 0.4) +
       geom_line(color = 'blue') +
-      labs(x = 'Diversidade de coberturas vegetais (Shannon)',
+      labs(x = 'Diversidade de Classes Vegetais  (Shannon)',
            y = 'Riqueza (log)') +
       theme_bw()
 
 # Hipótese 2 - riqueza X cobertura florestal e arbórea
 
+modfull8 <- glm(riqueza ~ area_pq_km2*cob_vegetacao + shannon, 
+                data = tab_ana_arbo, family = poisson)
 
-modfull3 <- glm(riqueza ~ area_pq_km2*cob_vegetacao + shannon, 
-                data = tab_mod_arbflo, family = poisson)
+summary(modfull8)
 
-summary(modfull3)
+efeitos4 <- as.data.frame(effects::effect('shannon',
+                                          modfull8))
+library(ggplot2)
+ggplot(efeitos4,
+       aes(x = shannon, y = log(fit))) +
+      geom_ribbon(aes(ymin = log(lower), ymax = log(upper)),
+                  alpha = 0.4) +
+      geom_line(color = 'blue') +
+      labs(x = expression ('Diversidade de Classes Vegetais Arbóreas e Florestais (Shannon)'),
+           y = 'Riqueza (log)') +
+      theme_bw()
+
+# Hipótese 3 - riqueza X cobertura florestal 
+
+modfull9 <- glm(riqueza ~ area_pq_km2*cob_vegetacao + shannon, 
+                data = tab_ana_flo, family = poisson)
+
+summary(modfull9)
+
+efeitos5 <- as.data.frame(effects::effect('shannon',
+                                          modfull9))
+library(ggplot2)
+ggplot(efeitos5,
+       aes(x = shannon, y = log(fit))) +
+      geom_ribbon(aes(ymin = log(lower), ymax = log(upper)),
+                  alpha = 0.4) +
+      geom_line(color = 'blue') +
+      labs(x = expression ('Diversidade de Classes Vegetais Florestais (Shannon)'),
+           y = 'Riqueza (log)') +
+      theme_bw()
 
 
 # Hipótese 3 - área X riqueza X cobertura vegetal
@@ -207,7 +275,7 @@ mod13 <- glm(riqueza ~ cob_scale +BV_M2,
 mod14 <- glm(riqueza ~ BV_M2, 
              data = tab_mod, family = poisson)
 
-bbmle::AICctab(mod7, mod8, mod9, mod10, mod11, mod12, mod13, modfull4,
+bbmle::AICctab(mod14, mod8, mod9, mod10, mod11, mod12, mod13, modfull4,
                base = TRUE)
 
 plot(modfull4)
@@ -219,6 +287,7 @@ modfull5 <- glm(riqueza ~ BV_M2*cob_vegetacao + shannon + area_pq_km2,
 summary(modfull5)
 
 #Tabela Modelos
+library(sjPlot)
 
 pl <- c(
       '(Intercept)' = "Intercept",
@@ -229,7 +298,7 @@ pl <- c(
       'BV_M2:cob_scale' ="Área do Parque (Km2) x Cobertura de Vegetação"
 )
 
-tab_model(modfull4, mod7, dv.labels = c("Modelo Cheio","Modelo 1"), 
+tab_model(modfull4, mod8, dv.labels = c("Modelo Cheio","Modelo 8"), 
           pred.labels = pl, 
           transform = NULL, 
           show.aic=T,
@@ -239,7 +308,7 @@ tab_model(modfull4, mod7, dv.labels = c("Modelo Cheio","Modelo 1"),
           string.p = "p",
           string.est="Estimate")
 
-tab_model(mod8, mod9, dv.labels = c("Modelo 2","Modelo 4"), 
+tab_model(mod9, mod10, dv.labels = c("Modelo 9","Modelo 10"), 
           pred.labels = pl, 
           transform = NULL, 
           show.aic=T,
@@ -249,7 +318,7 @@ tab_model(mod8, mod9, dv.labels = c("Modelo 2","Modelo 4"),
           string.p = "p",
           string.est="Estimate")
 
-tab_model(mod10, mod11, dv.labels = c("Modelo 3","Modelo 5"), 
+tab_model(mod11, mod12, dv.labels = c("Modelo 11","Modelo 12"), 
           pred.labels = pl, 
           transform = NULL, 
           show.aic=T,
@@ -259,7 +328,7 @@ tab_model(mod10, mod11, dv.labels = c("Modelo 3","Modelo 5"),
           string.p = "p",
           string.est="Estimate")
 
-tab_model(mod12, mod13, dv.labels = c("Modelo 6","Modelo 0"), 
+tab_model(mod13, mod14, dv.labels = c("Modelo 13","Modelo 14"), 
           pred.labels = pl, 
           transform = NULL, 
           show.aic=T,
